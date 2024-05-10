@@ -1,0 +1,27 @@
+version: '3'
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            - db
+        ports:
+            - "8086:80"
+
+    db:
+        image: mysql:8.0
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: blog-project
+            MYSQL_USER: blog-project
+            MYSQL_PASSWORD: blog-project
+        volumes:
+            - dbdata:/var/lib/mysql
+
+volumes:
+    dbdata:
