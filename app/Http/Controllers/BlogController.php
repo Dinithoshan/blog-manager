@@ -89,51 +89,45 @@ class BlogController extends Controller
         return view('blog.show', ['blog' => $blog]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
+public function update(Request $request, string $id)
+{
 
-        //Checking if the authenticated user has permissions    
-        $currentUser = Auth::user();
+    // Checking if the authenticated user has permissions    
+    $currentUser = Auth::user();
 
-        if (!$currentUser->hasPermissionTo('edit-unpublished-article')) {
-            abort(401);
-        } else {
-            //finding the blog by the id
-            $blog = Blog::findOrFail($id);
+    if (!$currentUser->hasPermissionTo('edit-unpublished-article') && !$currentUser->hasRole('admin')) {
+        abort(401);
+    } else {
+        // Finding the blog by the id
+        $blog = Blog::findOrFail($id);
 
-            //Make sure that the blog is not published before it is updated
-            if ($blog->is_published) {
-                abort(403, 'cannot update a published blog');
-            }
-
-            //validate ownership of the blog
-            if ($blog->user_id !== $currentUser->id) {
-                abort(403, 'Cannot update blog that doesn\'t belong to you');
-            } elseif (!$currentUser->hasRole('admin'))
-                ;
-            else {
-                //Validating the data
-                $request->validate([
-                    'blog_title' => 'required|string|max:255',
-                    'blog_content' => 'required|string',
-                ]);
-
-                //updating the blog
-                $blog->update([
-                    'blog_title' => $request->input('blog_title'),
-                    'blog_content' => $request->input('blog_content'),
-                ]);
-
-                //Redirect to the owned blog page with a success message
-                return to_route('blog.owned', auth()->id())->with('success', 'Blog updated successfully');
-            }
-
-
+        // Make sure that the blog is not published before it is updated
+        if ($blog->is_published) {
+            abort(403, 'Cannot update a published blog');
         }
+
+        // Validate ownership of the blog
+        if ($blog->user_id !== $currentUser->id) {
+            abort(403, 'Cannot update blog that doesn\'t belong to you');
+        }
+
+        // Validating the data
+        $request->validate([
+            'blog_title' => 'required|string|max:255',
+            'blog_content' => 'required|string',
+        ]);
+
+        // Updating the blog
+        $blog->update([
+            'blog_title' => $request->input('blog_title'),
+            'blog_content' => $request->input('blog_content'),
+        ]);
+
+        // Redirect to the owned blog page with a success message
+        return redirect()->route('blog.owned', auth()->id())->with('success', 'Blog updated successfully');
     }
+}
+
 
     /**
      * Remove the specified resource from storage.
@@ -183,7 +177,7 @@ class BlogController extends Controller
             $blog->update(['is_published' => true]);
             return to_route('blog.unpublished')->with('message', 'Blog has been published successfully');
         } catch (ModelNotFoundException $e) {
-            return to_route('blog.unpublished')->with('message', 'Error blog on found');
+            return to_route('blog.unpublished')->with('message', 'Error not found');
         }
     }
 
@@ -198,7 +192,7 @@ class BlogController extends Controller
             $blog->update(['is_published' => false]);
             return to_route('blog.index')->with('message', 'Blog has been unpublished successfully');
         } catch (ModelNotFoundException $e) {
-            return to_route('blog.index')->with('message', 'Error blog on found');
+            return to_route('blog.index')->with('message', 'Error not found');
         }
     }
 

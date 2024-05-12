@@ -129,7 +129,7 @@ class AdminController extends Controller
         //set acount to not active if account contains published roles
         elseif ($publishedBlogs > 0){
             $user->active = false;
-            $user->save;
+            $user->save();
             return to_route('admin.index')->with('success', 'User was disabled Successfully!');
         } 
         //delete all unpublished blogs and delete account

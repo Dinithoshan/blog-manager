@@ -2,6 +2,12 @@
 <h1 class="text-3xl font-bold mb-4">Update Blog</h1>
 <hr>
 
+@if ($errors->has('email'))
+<div class="alert alert-danger">
+    {{ $errors->first('blog_title') }}
+</div>
+@endif
+
 <form method="POST" action="{{ route('blog.update', $blog->id) }}">
     @csrf
     @method('PUT')
